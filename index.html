@@ -4,12 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Game</title>
+    <style>
+        canvas {
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Pong Game</h1>
-    <canvas id="pongCanvas"></canvas>
+    <canvas id="pong" width="800" height="400"></canvas>
     <script>
-        // Your pong game JavaScript code will go here
+        const canvas = document.getElementById('pong');
+        const ctx = canvas.getContext('2d');
+
+        // create the pong paddle
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+        let playerPaddleY = (canvas.height - paddleHeight) / 2;
+        let aiPaddleY = (canvas.height - paddleHeight) / 2;
+        let paddleSpeed = 5;
+
+        // create the pong ball
+        const ballSize = 10;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
+
+        // draw function
+        function draw() {
+            // clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // draw player paddle
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, playerPaddleY, paddleWidth, paddleHeight);
+
+            // draw AI paddle
+            ctx.fillRect(canvas.width - paddleWidth, aiPaddleY, paddleWidth, paddleHeight);
+
+            // draw ball
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballSize, 0, Math.PI * 2);  
+            ctx.fill();
+        }
+
+        // update game
+        function update() {
+            // move ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // bounce off top and bottom
+            if (ballY + ballSize > canvas.height || ballY - ballSize < 0) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // player paddle collision
+            if (ballX - ballSize < paddleWidth && ballY > playerPaddleY && ballY < playerPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // AI paddle collision
+            if (ballX + ballSize > canvas.width - paddleWidth && ballY > aiPaddleY && ballY < aiPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // AI movement
+            if (aiPaddleY + paddleHeight / 2 < ballY) {
+                aiPaddleY += paddleSpeed;
+            } else {
+                aiPaddleY -= paddleSpeed;
+            }
+            // prevent AI from moving out of canvas
+            aiPaddleY = Math.max(Math.min(aiPaddleY, canvas.height - paddleHeight), 0);
+        }
+
+        // handle key events
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowUp') {
+                playerPaddleY = Math.max(playerPaddleY - paddleSpeed, 0);
+            } else if (event.key === 'ArrowDown') {
+                playerPaddleY = Math.min(playerPaddleY + paddleSpeed, canvas.height - paddleHeight);
+            }
+        });
+
+        // game loop
+        function gameLoop() {
+            draw();
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // start game
+        gameLoop();
     </script>
 </body>
 </html>
